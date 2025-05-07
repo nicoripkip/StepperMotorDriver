@@ -1,0 +1,26 @@
+{
+    "name": "StepperMotorDriver",
+    "version": "1.0.0",
+    "description": "This driver is a software package that handles the input and output needed for the A4988 stepper motor driver. The aim of this driver is to make development easy.",
+    "keywords": "planet, happiness, people",
+    "repository":
+    {
+      "type": "git",
+      "url": "https://github.com/nicoripkip/StepperMotorDriver.git"
+    },
+    "authors":
+    [
+      {
+        "name": "Nico van Ommen",
+        "email": "nikovanommen@proton.me",
+        "url": "",
+        "maintainer": true
+      }
+    ],
+    "license": "GNU V3",
+    "homepage": "",
+    "dependencies": {
+    },
+    "frameworks": "*",
+    "platforms": "*"
+  }
