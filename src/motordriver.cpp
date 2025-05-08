@@ -2,6 +2,14 @@
 #include "Arduino.h"
 
 
+void IRAM_ATTR Motor_Timer_ISR()
+{
+    // digitalWrite(this->_motor->pinout.step_pin, HIGH);
+    // delayMicroseconds(1);
+    // digitalWrite(this->_motor->pinout.step_pin, LOW);
+}
+
+
 /**
  * @brief Constructor
  * 
@@ -31,10 +39,22 @@ MotorDriver::MotorDriver(motor_data_t* motor, int* pins, uint8_t gears, uint8_t 
     this->_motor->microstepping_enabled    = enable_microstepping;
     this->_motor->conf                     = conf;
 
-    this->_motor->default_callback         = nullptr;
-    this->_motor->custom_callback          = nullptr;
+    motor_err_t err = this->init();
+    if (err != MOTOR_ERR_OK) {
 
-    this->init();
+    }
+}
+
+
+/**
+ * @brief Destructor
+ * 
+ */
+MotorDriver::~MotorDriver()
+{
+    // free(this->_motor->default_callback);
+    // free(this->_motor->custom_callback);
+    free(this->_motor);
 }
 
 
@@ -54,6 +74,12 @@ motor_err_t MotorDriver::init()
     pinMode(this->_motor->pinout.motor_select2_pin, OUTPUT);
     pinMode(this->_motor->pinout.motor_select3_pin, OUTPUT);
 
+    digitalWrite(this->_motor->pinout.direction_pin, LOW);
+
+    // Configure other pins
+    digitalWrite(this->_motor->pinout.reset_pin, HIGH);
+    digitalWrite(this->_motor->pinout.sleep_pin, HIGH);
+
     // Configure microstepping
     if (!this->_motor->microstepping_enabled) {
         digitalWrite(this->_motor->pinout.motor_select1_pin, LOW);
@@ -68,6 +94,43 @@ motor_err_t MotorDriver::init()
     }
 
     // Assign control function as interrupt
+    this->_motor->use_custom_callback      = false;
+    this->_motor->default_callback         = Motor_Timer_ISR;
+    this->_motor->custom_callback          = nullptr;
+
+    // Setup timers
+
+
 
     // Calculate the required timing for the 
+
+    return MOTOR_ERR_OK;
+}
+
+
+/**
+ * @brief 
+ * 
+ * 
+ */
+motor_err_t MotorDriver::assign_motor_name(char* name)
+{
+    return MOTOR_ERR_OK;
+}
+
+
+/**
+ * 
+ * 
+ */
+motor_err_t MotorDriver::assign_custom_interrupt(interrupt_callback callback)
+{
+    this->_motor->custom_callback = callback;
+
+    this->_motor_timer = timerBegin(0, 80, true);
+    timerAttachInterrupt(this->_motor_timer, this->_motor->custom_callback, true);
+    timerAlarmWrite(this->_motor_timer, 1000, true);
+    timerAlarmEnable(this->_motor_timer);
+
+    return MOTOR_ERR_OK;
 }
